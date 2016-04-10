@@ -27,20 +27,29 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
 					"GOOGLE_CREDENTIALS",
 					"GOOGLE_CLOUD_KEYFILE_JSON",
+					"GCLOUD_KEYFILE_JSON",
 				}, nil),
 				ValidateFunc: validateCredentials,
 			},
 
 			"project": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("GOOGLE_PROJECT", nil),
+				Type:     schema.TypeString,
+				Required: true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+					"GOOGLE_PROJECT",
+					"GCLOUD_PROJECT",
+					"CLOUDSDK_CORE_PROJECT",
+				}, nil),
 			},
 
 			"region": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("GOOGLE_REGION", nil),
+				Type:     schema.TypeString,
+				Required: true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+					"GOOGLE_REGION",
+					"GCLOUD_REGION",
+					"CLOUDSDK_COMPUTE_REGION",
+				}, nil),
 			},
 		},
 
@@ -122,7 +131,7 @@ func validateAccountFile(v interface{}, k string) (warnings []string, errors []e
 		errors = append(errors, fmt.Errorf("Error loading Account File: %s", err))
 	}
 	if wasPath {
-		warnings = append(warnings, `account_file was provided as a path instead of 
+		warnings = append(warnings, `account_file was provided as a path instead of
 as file contents. This support will be removed in the future. Please update
 your configuration to use ${file("filename.json")} instead.`)
 	}
